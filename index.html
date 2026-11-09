@@ -1,0 +1,1639 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>AnimeSub AI 3D - Hinglish Pro Translator</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- JSZip for Batch Download -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            cyber: {
+              bg: '#08090f',
+              card: '#121421',
+              cardHover: '#181b2e',
+              border: '#262a45',
+              borderGlow: '#49367d',
+              neonPurple: '#a855f7',
+              neonCyan: '#06b6d4',
+              neonPink: '#ec4899',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* 3D Cyberpunk / Glassmorphic Custom Styling */
+    body {
+      background: radial-gradient(circle at 50% 0%, #1c1038 0%, #08090f 65%, #05060a 100%);
+      color: #f1f5f9;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 100vh;
+    }
+
+    /* 3D Tactile Card with Glassmorphism */
+    .card-3d {
+      background: linear-gradient(135deg, rgba(22, 25, 43, 0.85) 0%, rgba(14, 16, 28, 0.95) 100%);
+      border: 1px solid rgba(139, 92, 246, 0.25);
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.7),
+                  0 0 25px -5px rgba(124, 58, 237, 0.15),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(16px);
+      border-radius: 1.25rem;
+    }
+
+    /* 3D Physical Buttons */
+    .btn-3d-primary {
+      background: linear-gradient(180deg, #9333ea 0%, #7e22ce 60%, #6b21a8 100%);
+      border: 1px solid #c084fc;
+      border-top: 1px solid #e9d5ff;
+      box-shadow: 0 5px 0 #4c1d95, 0 10px 18px rgba(147, 51, 234, 0.4);
+      transition: all 0.1s ease;
+      cursor: pointer;
+    }
+    .btn-3d-primary:hover {
+      background: linear-gradient(180deg, #a855f7 0%, #8b5cf6 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 0 #4c1d95, 0 12px 22px rgba(147, 51, 234, 0.5);
+    }
+    .btn-3d-primary:active {
+      transform: translateY(4px);
+      box-shadow: 0 1px 0 #4c1d95, 0 4px 10px rgba(147, 51, 234, 0.3);
+    }
+
+    .btn-3d-secondary {
+      background: linear-gradient(180deg, #1e2238 0%, #151829 100%);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-top: 1px solid rgba(255, 255, 255, 0.25);
+      box-shadow: 0 4px 0 #0d0f1b, 0 8px 15px rgba(0,0,0,0.5);
+      transition: all 0.1s ease;
+      cursor: pointer;
+    }
+    .btn-3d-secondary:hover {
+      background: linear-gradient(180deg, #272d4a 0%, #1c2037 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 5px 0 #0d0f1b, 0 10px 18px rgba(0,0,0,0.6);
+    }
+    .btn-3d-secondary:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #0d0f1b, 0 3px 8px rgba(0,0,0,0.4);
+    }
+
+    .btn-3d-danger {
+      background: linear-gradient(180deg, #dc2626 0%, #b91c1c 100%);
+      border: 1px solid #f87171;
+      box-shadow: 0 4px 0 #7f1d1d, 0 8px 15px rgba(220, 38, 38, 0.4);
+      transition: all 0.1s ease;
+      cursor: pointer;
+    }
+    .btn-3d-danger:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #7f1d1d;
+    }
+
+    /* 3D Input Fields */
+    .input-3d {
+      background: rgba(10, 11, 20, 0.85);
+      border: 1px solid #2a2f4c;
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.6), 0 1px 0 rgba(255,255,255,0.05);
+      transition: all 0.2s ease;
+    }
+    .input-3d:focus {
+      border-color: #a855f7;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.5), 0 0 15px rgba(168, 85, 247, 0.35);
+      outline: none;
+    }
+
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0c0d17; }
+    ::-webkit-scrollbar-thumb { background: #323759; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #9333ea; }
+  </style>
+</head>
+<body class="flex flex-col pb-24 md:pb-8 selection:bg-purple-600 selection:text-white">
+
+  <!-- ========================================== -->
+  <!-- TOP 3D NAVIGATION HEADER                  -->
+  <!-- ========================================== -->
+  <header class="sticky top-0 z-40 bg-[#0c0d18]/90 backdrop-blur-xl border-b border-purple-500/20 px-4 py-3 shadow-lg shadow-black/40">
+    <div class="max-w-4xl mx-auto flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-2.5">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-600 via-pink-600 to-cyan-400 p-[1.5px] shadow-lg shadow-purple-600/40">
+          <div class="w-full h-full bg-[#0d0e19] rounded-[14px] flex items-center justify-center">
+            <span class="text-transparent bg-clip-text bg-gradient-to-tr from-purple-400 to-pink-300 font-black text-xl">あ</span>
+          </div>
+        </div>
+        <div>
+          <h1 class="text-base font-extrabold text-white leading-tight flex items-center gap-1.5">
+            AnimeSub <span class="text-xs px-2 py-0.5 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold tracking-wide shadow-sm">AI 3D</span>
+          </h1>
+          <p class="text-[11px] text-purple-300/80 font-medium tracking-tight">Hinglish Anime Translator • Powered by Gemini</p>
+        </div>
+      </div>
+
+      <!-- Live API Status & Auto-save Pill -->
+      <div class="flex items-center gap-2">
+        <div id="saveIndicator" class="hidden text-[10px] text-emerald-400 font-mono tracking-tight items-center gap-1">
+          <span>✓ Saved</span>
+        </div>
+        <div id="apiStatusBadge" class="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-red-950/40 text-red-400 border border-red-500/30 shadow-inner">
+          <span class="w-2 h-2 rounded-full bg-red-400 animate-pulse"></span>
+          <span id="apiStatusText" class="font-semibold">API Key Needed</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================== -->
+  <!-- MOBILE BOTTOM 3D NAVIGATION DOCK           -->
+  <!-- ========================================== -->
+  <div class="fixed bottom-0 left-0 right-0 z-50 bg-[#0f111f]/95 backdrop-blur-2xl border-t border-purple-500/20 py-2.5 px-3 md:hidden shadow-2xl shadow-black">
+    <div class="flex justify-around items-center max-w-md mx-auto">
+      <button onclick="switchTab('translate')" id="nav-translate" class="nav-btn flex flex-col items-center gap-1 text-purple-400 py-1 px-2.5 rounded-xl text-[11px] font-bold transition-all">
+        <svg class="w-5 h-5 drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+        <span>Translate</span>
+      </button>
+      <button onclick="switchTab('context')" id="nav-context" class="nav-btn flex flex-col items-center gap-1 text-gray-400 py-1 px-2.5 rounded-xl text-[11px] font-bold transition-all">
+        <svg class="w-5 h-5 drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+        <span>Story & Cast</span>
+      </button>
+      <button onclick="switchTab('settings')" id="nav-settings" class="nav-btn flex flex-col items-center gap-1 text-gray-400 py-1 px-2.5 rounded-xl text-[11px] font-bold transition-all">
+        <svg class="w-5 h-5 drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+        <span>Gemini API</span>
+      </button>
+      <button onclick="switchTab('preview')" id="nav-preview" class="nav-btn flex flex-col items-center gap-1 text-gray-400 py-1 px-2.5 rounded-xl text-[11px] font-bold transition-all">
+        <svg class="w-5 h-5 drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+        <span>Preview</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Desktop Tab Bar -->
+  <div class="hidden md:block bg-[#0e101d]/60 border-b border-purple-500/20 py-2.5 px-4 backdrop-blur-md">
+    <div class="max-w-4xl mx-auto flex items-center gap-3">
+      <button onclick="switchTab('translate')" id="d-nav-translate" class="tab-btn px-4 py-2 rounded-xl text-xs font-bold btn-3d-primary text-white">📁 Files & Translate</button>
+      <button onclick="switchTab('context')" id="d-nav-context" class="tab-btn px-4 py-2 rounded-xl text-xs font-bold btn-3d-secondary text-gray-300">🎭 Story & Cast Context</button>
+      <button onclick="switchTab('settings')" id="d-nav-settings" class="tab-btn px-4 py-2 rounded-xl text-xs font-bold btn-3d-secondary text-gray-300">⚙️ Gemini API & Models</button>
+      <button onclick="switchTab('preview')" id="d-nav-preview" class="tab-btn px-4 py-2 rounded-xl text-xs font-bold btn-3d-secondary text-gray-300">👁️ Preview & Download</button>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <main class="max-w-4xl w-full mx-auto p-3.5 sm:p-5 flex-1 space-y-5">
+
+    <!-- ============================================================== -->
+    <!-- TAB 1: FILE UPLOAD, SPLIT CONFIG & BATCH TRANSLATION           -->
+    <!-- ============================================================== -->
+    <section id="tab-translate" class="tab-content space-y-4">
+      
+      <!-- Top Config Card: Language & Part Split -->
+      <div class="card-3d p-4 sm:p-5 space-y-4">
+        
+        <!-- Row 1: Target Language -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-purple-500/15">
+          <div>
+            <label class="text-xs font-bold uppercase tracking-wider text-purple-300 block mb-1">
+              Target Language Style:
+            </label>
+            <div class="flex flex-wrap items-center gap-2">
+              <label class="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-purple-600/30 text-purple-200 border border-purple-500/50 shadow-sm">
+                <input type="radio" name="targetLang" value="hinglish" checked onchange="updateLangMode()" class="accent-purple-500">
+                <span>Hinglish (aisa kuch samjhe)</span>
+              </label>
+              <label class="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#141624] text-gray-400 border border-gray-700/60">
+                <input type="radio" name="targetLang" value="bengali" onchange="updateLangMode()" class="accent-purple-500">
+                <span>Bengali (বাংলা)</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- ASS Tag & Effects Guarantee Badge -->
+          <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-950/40 border border-cyan-500/40 text-cyan-300 text-[11px] font-semibold self-start sm:self-center">
+            <svg class="w-3.5 h-3.5 text-cyan-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+            <span>ASS Effects Safe ({\an8}, \N, Pos)</span>
+          </div>
+        </div>
+
+        <!-- Row 2: Part Splitting Controls (Default 2 Parts with Continuity Memory) -->
+        <div class="bg-gradient-to-r from-purple-950/40 via-[#16142c] to-indigo-950/40 p-3.5 rounded-2xl border border-purple-500/30">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+            <div>
+              <span class="text-xs font-extrabold text-purple-200 flex items-center gap-1.5">
+                <span>🧠 Subtitle Split & Memory Mode:</span>
+                <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/30 text-purple-200 border border-purple-400/30 font-mono">Part by Part</span>
+              </span>
+              <p class="text-[11px] text-purple-300/80 mt-0.5 leading-snug">
+                Jaise 500 lines ka sub ho toh 250-250 lines karke 2 baar request bheje ga. First part ke baad summary context banake second part me pass karega taaki story na bhoole!
+              </p>
+            </div>
+
+            <!-- Split Selector Dropdown -->
+            <div class="flex items-center gap-2 flex-shrink-0">
+              <label for="splitPartsSelect" class="text-xs text-gray-300 font-semibold">Parts:</label>
+              <select id="splitPartsSelect" onchange="onSplitPartsChange()" class="input-3d px-3 py-1.5 rounded-xl text-xs font-bold text-purple-200 focus:outline-none">
+                <option value="2" selected>2 Parts (Default - 50% / 50%)</option>
+                <option value="3">3 Parts (33% each)</option>
+                <option value="4">4 Parts (25% each)</option>
+                <option value="chunk">Custom Batch (~50 lines each)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3D Drag & Drop Zone -->
+        <label for="subFileInput" class="border-2 border-dashed border-purple-500/30 hover:border-purple-400/80 transition-all rounded-2xl p-6 sm:p-8 flex flex-col items-center justify-center cursor-pointer bg-[#0b0c16]/80 group text-center shadow-inner">
+          <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-purple-600/30 to-pink-500/20 group-hover:scale-105 border border-purple-500/30 flex items-center justify-center text-purple-300 transition-all mb-3 shadow-lg">
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+          </div>
+          <p class="text-sm font-bold text-white mb-1">
+            Upload Subtitle Files (Single ya Multiple)
+          </p>
+          <p class="text-xs text-gray-400">
+            Supported Formats: <span class="text-purple-300 font-mono font-bold">.ass</span>, <span class="text-purple-300 font-mono font-bold">.srt</span>, <span class="text-purple-300 font-mono font-bold">.ssa</span>, <span class="text-purple-300 font-mono font-bold">.vtt</span>
+          </p>
+          <span class="mt-3.5 text-xs btn-3d-secondary px-4 py-1.5 rounded-xl text-purple-200 font-semibold inline-flex items-center gap-1.5">
+            <span>Browse Subtitles</span>
+            <span class="text-[10px] text-gray-400">(Drag & Drop bhi chalega)</span>
+          </span>
+          <input type="file" id="subFileInput" multiple accept=".srt,.ass,.ssa,.vtt" class="hidden">
+        </label>
+      </div>
+
+      <!-- File Queue & Sequential Execution Card -->
+      <div id="fileQueueSection" class="hidden card-3d p-4 sm:p-5 space-y-3.5">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div class="flex items-center gap-2">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-2">
+              <span>Subtitle Queue:</span>
+              <span id="fileCountBadge" class="text-xs px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono">0 Files</span>
+            </h3>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="clearFiles()" class="text-xs text-red-400 hover:text-red-300 px-2.5 py-1.5 rounded-xl bg-red-950/30 border border-red-500/20 transition-colors">
+              Clear All Files
+            </button>
+            <button id="startBtn" onclick="startSequentialTranslation()" class="btn-3d-primary px-4 py-2 rounded-xl text-xs font-extrabold text-white flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              <span>Start Translation</span>
+            </button>
+            <button id="stopBtn" onclick="stopTranslation()" class="hidden btn-3d-danger px-3 py-2 rounded-xl text-xs font-bold text-white flex items-center gap-1">
+              <span>Stop</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Files List with status indicators -->
+        <div id="fileListContainer" class="space-y-2 max-h-72 overflow-y-auto pr-1">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Live Status & Mid-Way Summary Box -->
+        <div id="liveStatusBox" class="mt-3 p-3.5 rounded-2xl bg-[#090a14] border border-purple-500/20 text-xs space-y-2 hidden shadow-inner">
+          <div class="flex items-center justify-between text-gray-300">
+            <span class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-purple-400 animate-ping"></span>
+              <span id="currentStatusText" class="text-purple-200 font-semibold font-mono">Initializing...</span>
+            </span>
+            <span id="overallPercentage" class="font-mono text-cyan-400 font-black">0%</span>
+          </div>
+
+          <!-- 3D Glowing Progress Bar -->
+          <div class="w-full bg-[#151726] rounded-full h-2 overflow-hidden p-[1px] border border-white/5">
+            <div id="overallProgressBar" class="bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-400 h-full w-0 rounded-full transition-all duration-300 shadow-sm shadow-purple-500/50"></div>
+          </div>
+
+          <!-- Mid-Way Generated Story Summary Context -->
+          <div id="midSummaryCard" class="hidden mt-2 p-3 rounded-xl bg-purple-950/30 border border-purple-500/40 text-[11px] space-y-1">
+            <div class="flex items-center justify-between text-purple-300 font-bold">
+              <span>🧠 Generated Mid-Way Story Summary (Passed to Next Part):</span>
+            </div>
+            <p id="midSummaryText" class="text-gray-300 italic font-mono leading-relaxed"></p>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 2: ANIME STORY CONTEXT & CHARACTERS (WITH CLEAR BUTTONS)   -->
+    <!-- ============================================================== -->
+    <section id="tab-context" class="tab-content hidden space-y-4">
+      <div class="card-3d p-4 sm:p-5 space-y-4">
+        
+        <!-- Header with Quick Action to Clear Context while keeping Custom Prompt -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-purple-500/15">
+          <div>
+            <h2 class="text-base font-extrabold text-white flex items-center gap-2">
+              <span>🎭 Anime Lore & Character Cast</span>
+            </h2>
+            <p class="text-xs text-gray-400">AI ko anime ka context samjhao taaki translation natural aur accurate ho.</p>
+          </div>
+
+          <!-- Context Clear Actions -->
+          <div class="flex items-center gap-2 flex-wrap">
+            <button onclick="clearContextKeepPrompt()" class="btn-3d-secondary px-3 py-1.5 rounded-xl text-[11px] font-bold text-amber-300 border-amber-500/30 hover:border-amber-400 flex items-center gap-1" title="Clears Title, Lore & Cast, but keeps Custom Prompt">
+              <span>Clear Cast & Lore (Keep Prompt)</span>
+            </button>
+            <button onclick="clearAllContextAndPrompt()" class="btn-3d-danger px-3 py-1.5 rounded-xl text-[11px] font-bold text-white" title="Clears everything including Custom Prompt">
+              <span>Clear All</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Field 1: Anime Title / Arc -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="text-xs font-bold text-purple-200">Anime Title & Episode / Arc:</label>
+            <button onclick="clearField('animeTitle')" class="text-[10px] text-gray-400 hover:text-red-400 font-mono">Clear (✕)</button>
+          </div>
+          <input type="text" id="animeTitle" oninput="autoSaveContext()" placeholder="e.g. Jujutsu Kaisen Shibuya Arc, Solo Leveling Ep 5, Bleach TYBW..." 
+                 class="input-3d w-full px-3.5 py-2.5 rounded-xl text-xs text-white placeholder-gray-600">
+        </div>
+
+        <!-- Field 2: Story Context / Scene Lore -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="text-xs font-bold text-purple-200">Story Lore / Scene Context:</label>
+            <button onclick="clearField('storyContext')" class="text-[10px] text-gray-400 hover:text-red-400 font-mono">Clear (✕)</button>
+          </div>
+          <textarea id="storyContext" rows="3" oninput="autoSaveContext()" placeholder="Iss episode me kya ho raha hai? (e.g. Gojo aur Sukuna ki fight chal rahi hai, situation bohot intense hai, dono ek dusre ko taunt kar rahe hain...)"
+                    class="input-3d w-full px-3.5 py-2.5 rounded-xl text-xs text-white placeholder-gray-600"></textarea>
+        </div>
+
+        <!-- Field 3: Characters, Genders & Relationships -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="text-xs font-bold text-purple-200">
+              Character Names & Pronouns:
+              <span class="text-[11px] text-purple-400 font-normal ml-1">(Taaki gender ya pronoun galat na kare)</span>
+            </label>
+            <button onclick="clearField('characterList')" class="text-[10px] text-gray-400 hover:text-red-400 font-mono">Clear (✕)</button>
+          </div>
+          <textarea id="characterList" rows="3" oninput="autoSaveContext()" placeholder="e.g.
+- Gojo: Male, cool mentor, confident and sarcastic attitude
+- Sukuna: Male ancient curse king, arrogant, treats humans like dust
+- Nobara: Female, bold and feisty"
+                    class="input-3d w-full px-3.5 py-2.5 rounded-xl text-xs text-white placeholder-gray-600 font-mono"></textarea>
+        </div>
+
+        <!-- Field 4: Custom Instructions & Tone (Preserved during Context Clear) -->
+        <div class="pt-2 border-t border-purple-500/15">
+          <div class="flex items-center justify-between mb-1">
+            <label class="text-xs font-bold text-pink-300 flex items-center gap-1.5">
+              <span>⭐ Custom Prompt / Tone Rules (Permanent):</span>
+              <span class="text-[10px] px-1.5 py-0.2 rounded bg-pink-500/20 text-pink-200 border border-pink-500/30 font-normal">Context reset me ye safe rahega</span>
+            </label>
+            <button onclick="clearField('customPrompt')" class="text-[10px] text-gray-400 hover:text-red-400 font-mono">Clear (✕)</button>
+          </div>
+          <textarea id="customPrompt" rows="3" oninput="autoSaveContext()" placeholder="e.g.
+- Pure conversational natural Hinglish chahiye (jaise: 'aisa kuch samjhe?', 'chal be nautanki', 'teri toh aisi taisi').
+- Honorifics (Senpai, Kun, Chan, Sensei, Bro) jaise hain waise hi rakho.
+- Shuddh Hindi ya Devanagari script bilkul mat likhna."
+                    class="input-3d w-full px-3.5 py-2.5 rounded-xl text-xs text-white placeholder-gray-600 font-mono"></textarea>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 3: GOOGLE GEMINI API SETTINGS & COMPLETE MODEL PRESETS     -->
+    <!-- ============================================================== -->
+    <section id="tab-settings" class="tab-content hidden space-y-4">
+      <div class="card-3d p-4 sm:p-5 space-y-4">
+        
+        <div>
+          <h2 class="text-base font-extrabold text-white flex items-center gap-2">
+            <span>⚙️ Google Gemini API & Model Setup</span>
+          </h2>
+          <p class="text-xs text-gray-400">Sirf Google Gemini API se chalega. Saare latest models supported hain.</p>
+        </div>
+
+        <!-- Gemini API Key Input -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="text-xs font-bold text-purple-200">Google Gemini API Key:</label>
+            <div class="flex items-center gap-3">
+              <button onclick="clearField('apiKeyInput')" class="text-[10px] text-gray-400 hover:text-red-400 font-mono">Clear Key (✕)</button>
+              <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-[11px] text-cyan-400 hover:underline flex items-center gap-1">
+                <span>Free Gemini Key lo</span> ↗
+              </a>
+            </div>
+          </div>
+          <div class="relative">
+            <input type="password" id="apiKeyInput" oninput="autoSaveApi()" placeholder="AIzaSy... Gemini API Key paste karo" 
+                   class="input-3d w-full px-3.5 py-2.5 pr-10 rounded-xl text-xs text-white font-mono">
+            <button type="button" onclick="toggleApiKeyVisibility()" class="absolute right-3 top-2.5 text-gray-400 hover:text-white">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+            </button>
+          </div>
+          <p class="text-[10px] text-gray-500 mt-1">API Key aapke device me LocalStorage me automatically save ho jayegi.</p>
+        </div>
+
+        <!-- Model Selection Dropdown (All Gemini Models for Subtitle Translation) -->
+        <div class="space-y-3 pt-2 border-t border-purple-500/15">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <label class="text-xs font-bold text-purple-200 block">Select Gemini Model (All Free & Production Models):</label>
+              <span class="text-[10px] text-gray-400">Google AI Studio ke saare subtitle-capable models yahan listed hain.</span>
+            </div>
+            <!-- Fetch Live Models from Google AI Studio -->
+            <button type="button" id="fetchModelsBtn" onclick="fetchLiveModelsFromApi()" class="btn-3d-secondary px-3 py-1.5 rounded-xl text-[11px] font-bold text-cyan-300 border-cyan-500/30 hover:border-cyan-400 flex items-center gap-1.5 self-start sm:self-auto shadow-sm">
+              <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+              <span>Fetch Live Models from API</span>
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div>
+              <select id="geminiModelSelect" onchange="onGeminiPresetChange()" class="input-3d w-full px-3 py-2.5 rounded-xl text-xs text-white focus:outline-none font-mono">
+                <!-- Group 1: Gemini 3.x & 4.x Next-Gen Generation -->
+                <optgroup label="🚀 Gemini 3.x & 4.x Series (Newest Generation)">
+                  <option value="gemini-3.8-flash" selected>gemini-3.8-flash (High Intelligence & Speed - Recommended)</option>
+                  <option value="gemini-3.6-flash">gemini-3.6-flash (Advanced Efficiency Flash)</option>
+                  <option value="gemini-3.5-flash-lite">gemini-3.5-flash-lite (Cost-Effective & Super Fast)</option>
+                  <option value="gemini-3.1-flash-lite">gemini-3.1-flash-lite (Compact High-Throughput)</option>
+                  <option value="gemini-4-argon">gemini-4-argon (Flagship Deep Reasoning & 1M Context)</option>
+                  <option value="gemini-3.8-pro">gemini-3.8-pro (Next-Gen Pro Reasoning)</option>
+                  <option value="gemini-3.5-pro">gemini-3.5-pro (Deep Lore & Complex Dialects)</option>
+                  <option value="gemini-3.0-flash">gemini-3.0-flash (General Purpose Flash)</option>
+                </optgroup>
+
+                <!-- Group 2: Gemini 2.x Series -->
+                <optgroup label="⚡ Gemini 2.x Series (Fast & Reliable)">
+                  <option value="gemini-2.5-flash">gemini-2.5-flash (Hybrid Reasoning & Fast)</option>
+                  <option value="gemini-2.5-pro">gemini-2.5-pro (State-of-the-Art Deep Reasoning)</option>
+                  <option value="gemini-2.0-flash">gemini-2.0-flash (Production Workhorse, 15 RPM)</option>
+                  <option value="gemini-2.0-flash-lite">gemini-2.0-flash-lite (Ultra Low Latency, 30 RPM)</option>
+                </optgroup>
+
+                <!-- Group 3: Gemini 1.5 Series -->
+                <optgroup label="📦 Gemini 1.5 Series (Long Context)">
+                  <option value="gemini-1.5-flash">gemini-1.5-flash (Classic Workhorse, 1M Context)</option>
+                  <option value="gemini-1.5-flash-8b">gemini-1.5-flash-8b (High Throughput & Speed)</option>
+                  <option value="gemini-1.5-pro">gemini-1.5-pro (2M Context Specialist)</option>
+                  <option value="gemini-1.0-pro">gemini-1.0-pro (Legacy Text Model)</option>
+                </optgroup>
+
+                <!-- Group 4: Experimental & Thinking Models -->
+                <optgroup label="🧪 Experimental & Thinking Models (Google AI Studio)">
+                  <option value="gemini-2.0-flash-thinking-exp-01-21">gemini-2.0-flash-thinking-exp-01-21 (Thinking / Reasoner)</option>
+                  <option value="gemini-2.0-pro-exp-02-05">gemini-2.0-pro-exp-02-05 (Experimental Pro)</option>
+                  <option value="gemini-exp-1206">gemini-exp-1206 (Experimental Quality)</option>
+                  <option value="learnlm-1.5-pro-experimental">learnlm-1.5-pro-experimental (Dialogue & Teaching)</option>
+                </optgroup>
+
+                <!-- Group 5: Open Gemma Models on Gemini API -->
+                <optgroup label="🌐 Open Gemma Models (Gemini API)">
+                  <option value="gemma-2-27b-it">gemma-2-27b-it (Gemma 2 27B Instruction)</option>
+                  <option value="gemma-2-9b-it">gemma-2-9b-it (Gemma 2 9B Fast)</option>
+                </optgroup>
+              </select>
+
+              <!-- Model Badge Details -->
+              <div id="modelBadgeInfo" class="mt-1.5 flex items-center gap-2 text-[10px] text-purple-300 font-mono">
+                <span class="px-2 py-0.5 rounded-md bg-purple-950/60 border border-purple-500/30">Free Tier Friendly</span>
+                <span class="px-2 py-0.5 rounded-md bg-cyan-950/60 border border-cyan-500/30 text-cyan-300">1M Context</span>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="text-xs font-bold text-purple-200">Or Custom Model Identifier:</label>
+                <button onclick="clearField('customModelInput')" class="text-[10px] text-gray-400 hover:text-red-400 font-mono">Clear (✕)</button>
+              </div>
+              <input type="text" id="customModelInput" oninput="autoSaveApi()" placeholder="e.g. gemini-2.5-flash ya gemini-3.8-flash" 
+                     class="input-3d w-full px-3.5 py-2.5 rounded-xl text-xs text-white font-mono">
+              <p class="text-[10px] text-gray-500 mt-1">Google AI Studio documentation me naya model aate hi yahan uska naam likh sakte hain.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rate Limit Delay -->
+        <div class="pt-2 border-t border-purple-500/15">
+          <label class="block text-xs font-bold text-purple-200 mb-1">Request Delay (Safety against Free Tier Quota):</label>
+          <select id="rateLimitDelay" onchange="autoSaveApi()" class="input-3d w-full sm:w-1/2 px-3 py-2 rounded-xl text-xs text-white">
+            <option value="800">0.8 Seconds (Normal Speed)</option>
+            <option value="1500" selected>1.5 Seconds (Recommended for Free Tier)</option>
+            <option value="3000">3.0 Seconds (Extra Safe)</option>
+          </select>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 4: PREVIEW & EXPORT (LINE BY LINE + ZIP DOWNLOAD)           -->
+    <!-- ============================================================== -->
+    <section id="tab-preview" class="tab-content hidden space-y-4">
+      <div class="card-3d p-4 sm:p-5 space-y-4">
+        
+        <div class="flex flex-wrap items-center justify-between gap-2.5 pb-2 border-b border-purple-500/15">
+          <div>
+            <h2 class="text-base font-extrabold text-white flex items-center gap-2">
+              <span>👁️ Subtitle Preview & Downloads</span>
+            </h2>
+            <p class="text-xs text-gray-400">Original aur translated dialogue ko line by line compare karein.</p>
+          </div>
+
+          <!-- Batch ZIP Download -->
+          <button id="downloadZipBtn" onclick="downloadAllAsZip()" disabled class="btn-3d-secondary px-3.5 py-2 rounded-xl text-xs font-bold text-gray-400 border-gray-700 cursor-not-allowed flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            <span>Download All as ZIP</span>
+          </button>
+        </div>
+
+        <!-- File Selector & Single Download -->
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <label class="text-xs text-gray-300 font-bold">Select File:</label>
+            <select id="previewFileSelect" onchange="renderPreviewTable()" class="input-3d px-3 py-1.5 rounded-xl text-xs text-white font-mono">
+              <option value="">No files translated yet</option>
+            </select>
+          </div>
+          <button id="downloadCurrentBtn" onclick="downloadCurrentFile()" disabled class="btn-3d-primary px-3.5 py-1.5 rounded-xl text-xs font-bold text-white disabled:opacity-40 disabled:cursor-not-allowed">
+            Download This File
+          </button>
+        </div>
+
+        <!-- Line By Line Side-by-Side Comparison -->
+        <div class="border border-purple-500/20 rounded-2xl overflow-hidden bg-[#0a0b14]/70 shadow-inner">
+          <div class="max-h-96 overflow-y-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="sticky top-0 bg-[#121424] border-b border-purple-500/20 text-purple-300">
+                <tr>
+                  <th class="py-2.5 px-3 w-12 text-center font-mono">#</th>
+                  <th class="py-2.5 px-3 w-28 font-mono text-[11px]">Time</th>
+                  <th class="py-2.5 px-3 w-1/2">Original Speech</th>
+                  <th class="py-2.5 px-3 w-1/2 text-cyan-300 font-semibold">Hinglish / Bengali</th>
+                </tr>
+              </thead>
+              <tbody id="previewTableBody" class="divide-y divide-purple-500/10 text-gray-300">
+                <tr>
+                  <td colspan="4" class="text-center py-10 text-gray-500 italic">
+                    Abhi tak koi subtitle translate nahi hua. "Translate" tab se file upload karke start karein.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 3D Notification Toast -->
+  <div id="toast" class="fixed top-5 right-5 z-50 transform translate-y-[-100px] opacity-0 transition-all duration-300 px-4 py-2.5 rounded-2xl shadow-2xl text-xs font-bold flex items-center gap-2 border"></div>
+
+  <!-- JAVASCRIPT APPLICATION CORE -->
+  <script>
+    /* ====================================================================
+       APPLICATION STATE
+    ==================================================================== */
+    const STATE = {
+      apiKey: '',
+      model: 'gemini-3.8-flash',
+      targetLang: 'hinglish', // 'hinglish' | 'bengali'
+      splitParts: '2', // '2' | '3' | '4' | 'chunk'
+      rateLimitDelay: 1500,
+
+      // Context
+      animeTitle: '',
+      storyContext: '',
+      characterList: '',
+      customPrompt: '',
+
+      // Files array
+      files: [],
+      isTranslating: false,
+      shouldStop: false,
+      activePreviewFileId: null
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSavedState();
+      updateApiStatusBadge();
+      setupDragAndDrop();
+    });
+
+    /* ====================================================================
+       PERSISTENCE & AUTO-SAVE
+    ==================================================================== */
+    function loadSavedState() {
+      try {
+        const saved = JSON.parse(localStorage.getItem('anime_sub_3d_state') || '{}');
+        if (saved.apiKey) STATE.apiKey = saved.apiKey;
+        if (saved.model) STATE.model = saved.model;
+        if (saved.targetLang) STATE.targetLang = saved.targetLang;
+        if (saved.splitParts) STATE.splitParts = saved.splitParts;
+        if (saved.rateLimitDelay) STATE.rateLimitDelay = saved.rateLimitDelay;
+
+        if (saved.animeTitle) STATE.animeTitle = saved.animeTitle;
+        if (saved.storyContext) STATE.storyContext = saved.storyContext;
+        if (saved.characterList) STATE.characterList = saved.characterList;
+        if (saved.customPrompt) STATE.customPrompt = saved.customPrompt;
+
+        // Populate form
+        document.getElementById('apiKeyInput').value = STATE.apiKey;
+        document.getElementById('customModelInput').value = STATE.model;
+        document.getElementById('rateLimitDelay').value = STATE.rateLimitDelay;
+        document.getElementById('splitPartsSelect').value = STATE.splitParts;
+
+        document.getElementById('animeTitle').value = STATE.animeTitle;
+        document.getElementById('storyContext').value = STATE.storyContext;
+        document.getElementById('characterList').value = STATE.characterList;
+        document.getElementById('customPrompt').value = STATE.customPrompt;
+
+        const langRadio = document.querySelector(`input[name="targetLang"][value="${STATE.targetLang}"]`);
+        if (langRadio) langRadio.checked = true;
+
+        // Restore cached live models if any
+        try {
+          const cachedLive = JSON.parse(localStorage.getItem('anime_sub_live_models') || '[]');
+          if (cachedLive.length > 0) {
+            injectLiveModelsIntoDropdown(cachedLive);
+          }
+        } catch (_) {}
+
+        const presetSelect = document.getElementById('geminiModelSelect');
+        if ([...presetSelect.options].some(o => o.value === STATE.model)) {
+          presetSelect.value = STATE.model;
+        }
+
+        updateModelBadge(STATE.model);
+      } catch (e) {
+        console.error("State loading error:", e);
+      }
+    }
+
+    function saveState() {
+      const data = {
+        apiKey: STATE.apiKey,
+        model: STATE.model,
+        targetLang: STATE.targetLang,
+        splitParts: STATE.splitParts,
+        rateLimitDelay: STATE.rateLimitDelay,
+        animeTitle: STATE.animeTitle,
+        storyContext: STATE.storyContext,
+        characterList: STATE.characterList,
+        customPrompt: STATE.customPrompt
+      };
+      localStorage.setItem('anime_sub_3d_state', JSON.stringify(data));
+      flashSavedIndicator();
+      updateApiStatusBadge();
+    }
+
+    function flashSavedIndicator() {
+      const el = document.getElementById('saveIndicator');
+      el.classList.remove('hidden');
+      el.classList.add('flex');
+      clearTimeout(window._saveTimer);
+      window._saveTimer = setTimeout(() => {
+        el.classList.add('hidden');
+        el.classList.remove('flex');
+      }, 1500);
+    }
+
+    function autoSaveApi() {
+      STATE.apiKey = document.getElementById('apiKeyInput').value.trim();
+      const customModel = document.getElementById('customModelInput').value.trim();
+      STATE.model = customModel || document.getElementById('geminiModelSelect').value;
+      STATE.rateLimitDelay = parseInt(document.getElementById('rateLimitDelay').value);
+      saveState();
+    }
+
+    function autoSaveContext() {
+      STATE.animeTitle = document.getElementById('animeTitle').value;
+      STATE.storyContext = document.getElementById('storyContext').value;
+      STATE.characterList = document.getElementById('characterList').value;
+      STATE.customPrompt = document.getElementById('customPrompt').value;
+      saveState();
+    }
+
+    function onGeminiPresetChange() {
+      const select = document.getElementById('geminiModelSelect');
+      document.getElementById('customModelInput').value = select.value;
+      STATE.model = select.value;
+      updateModelBadge(select.value);
+      saveState();
+    }
+
+    function updateModelBadge(modelName) {
+      const badgeContainer = document.getElementById('modelBadgeInfo');
+      if (!badgeContainer) return;
+
+      let badge1 = "Google AI Studio";
+      let badge2 = "Standard Context";
+
+      if (modelName.includes('3.8-flash')) {
+        badge1 = "Gemini 3.8 Flagship Flash";
+        badge2 = "Ultra High Intelligence & Fast";
+      } else if (modelName.includes('3.6-flash')) {
+        badge1 = "Gemini 3.6 Flash";
+        badge2 = "Advanced Speed & Quality";
+      } else if (modelName.includes('3.5-flash-lite') || modelName.includes('3.1-flash-lite')) {
+        badge1 = "Flash-Lite High Throughput";
+        badge2 = "Ultra Fast & Cost-Effective";
+      } else if (modelName.includes('4-argon')) {
+        badge1 = "Gemini 4 Flagship Reasoning";
+        badge2 = "Deep Decodes & 1M Context";
+      } else if (modelName.includes('lite')) {
+        badge1 = "30 RPM (Free Tier Fast)";
+        badge2 = "Ultra Low Latency";
+      } else if (modelName.includes('thinking')) {
+        badge1 = "Chain-of-Thought (Reasoner)";
+        badge2 = "Complex Dialogue Analysis";
+      } else if (modelName.includes('pro')) {
+        badge1 = "Pro Series (High Intelligence)";
+        badge2 = "Deep Character Nuance";
+      } else if (modelName.includes('flash')) {
+        badge1 = "15 RPM (Free Tier Friendly)";
+        badge2 = "1M Token Context";
+      } else if (modelName.includes('gemma')) {
+        badge1 = "Open Weights Model";
+        badge2 = "Instruction Tuned";
+      }
+
+      badgeContainer.innerHTML = `
+        <span class="px-2 py-0.5 rounded-md bg-purple-950/60 border border-purple-500/30 text-purple-300 font-semibold">${badge1}</span>
+        <span class="px-2 py-0.5 rounded-md bg-cyan-950/60 border border-cyan-500/30 text-cyan-300 font-semibold">${badge2}</span>
+      `;
+    }
+
+    /* Live Google AI Studio API Fetch */
+    async function fetchLiveModelsFromApi() {
+      autoSaveApi();
+      if (!STATE.apiKey || STATE.apiKey.length < 8) {
+        showToast("Pehle upar valid Gemini API Key paste karein!", "error");
+        document.getElementById('apiKeyInput').focus();
+        return;
+      }
+
+      const btn = document.getElementById('fetchModelsBtn');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = `<span class="animate-spin inline-block mr-1">↻</span> Fetching from AI Studio...`;
+      btn.disabled = true;
+
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${STATE.apiKey}`;
+        const res = await fetch(url);
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error?.message || `Status ${res.status}`);
+        }
+
+        const data = await res.json();
+        const allModels = data.models || [];
+        
+        // Filter models capable of subtitle translation (generateContent)
+        const validModels = allModels.filter(m => 
+          Array.isArray(m.supportedGenerationMethods) && 
+          m.supportedGenerationMethods.includes('generateContent') &&
+          !m.name.includes('embedding') &&
+          !m.name.includes('aqa')
+        );
+
+        if (validModels.length === 0) {
+          showToast("API se koi generateContent model nahi mila.", "info");
+          return;
+        }
+
+        // Cache fetched models
+        localStorage.setItem('anime_sub_live_models', JSON.stringify(validModels));
+        injectLiveModelsIntoDropdown(validModels);
+
+        showToast(`${validModels.length} live models successfully loaded from Google AI Studio!`, "success");
+      } catch (err) {
+        console.error("Live models fetch error:", err);
+        showToast(`Models fetch failed: ${err.message}`, "error");
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    }
+
+    function injectLiveModelsIntoDropdown(liveModels) {
+      const select = document.getElementById('geminiModelSelect');
+      
+      // Remove previously injected live group if exists
+      const oldLiveGroup = document.getElementById('liveModelsOptGroup');
+      if (oldLiveGroup) oldLiveGroup.remove();
+
+      const group = document.createElement('optgroup');
+      group.id = 'liveModelsOptGroup';
+      group.label = `✨ Live from your Google AI Studio Account (${liveModels.length} Models)`;
+
+      liveModels.forEach(m => {
+        const modelId = m.name.replace(/^models\//, '');
+        const opt = document.createElement('option');
+        opt.value = modelId;
+        const ctxK = m.inputTokenLimit ? Math.round(m.inputTokenLimit / 1000) + 'K' : '';
+        opt.textContent = `${modelId} ${ctxK ? `(${ctxK} Context)` : ''}`;
+        if (modelId === STATE.model) opt.selected = true;
+        group.appendChild(opt);
+      });
+
+      // Insert at the top of select
+      select.insertBefore(group, select.firstChild);
+    }
+
+    function onSplitPartsChange() {
+      STATE.splitParts = document.getElementById('splitPartsSelect').value;
+      saveState();
+    }
+
+    function updateLangMode() {
+      const selected = document.querySelector('input[name="targetLang"]:checked');
+      if (selected) {
+        STATE.targetLang = selected.value;
+        saveState();
+      }
+    }
+
+    function toggleApiKeyVisibility() {
+      const input = document.getElementById('apiKeyInput');
+      input.type = input.type === 'password' ? 'text' : 'password';
+    }
+
+    function updateApiStatusBadge() {
+      const badge = document.getElementById('apiStatusBadge');
+      const text = document.getElementById('apiStatusText');
+      if (STATE.apiKey && STATE.apiKey.length > 8) {
+        badge.className = "flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-emerald-950/40 text-emerald-400 border border-emerald-500/30 shadow-inner";
+        badge.firstElementChild.className = "w-2 h-2 rounded-full bg-emerald-400";
+        text.textContent = "Gemini Ready";
+      } else {
+        badge.className = "flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-red-950/40 text-red-400 border border-red-500/30 shadow-inner";
+        badge.firstElementChild.className = "w-2 h-2 rounded-full bg-red-400 animate-pulse";
+        text.textContent = "API Key Needed";
+      }
+    }
+
+    /* ====================================================================
+       CLEAR FIELD & CLEAR CONTEXT LOGIC (EXACT USER REQUIREMENT)
+    ==================================================================== */
+    function clearField(fieldId) {
+      const el = document.getElementById(fieldId);
+      if (el) {
+        el.value = '';
+        if (fieldId === 'apiKeyInput') STATE.apiKey = '';
+        else if (fieldId === 'customModelInput') STATE.model = document.getElementById('geminiModelSelect').value;
+        else if (fieldId === 'animeTitle') STATE.animeTitle = '';
+        else if (fieldId === 'storyContext') STATE.storyContext = '';
+        else if (fieldId === 'characterList') STATE.characterList = '';
+        else if (fieldId === 'customPrompt') STATE.customPrompt = '';
+        saveState();
+        showToast("Field cleared!", "info");
+      }
+    }
+
+    // Clears Title, Story Lore, Characters - but KEEPS Custom Prompt intact!
+    function clearContextKeepPrompt() {
+      document.getElementById('animeTitle').value = '';
+      document.getElementById('storyContext').value = '';
+      document.getElementById('characterList').value = '';
+      STATE.animeTitle = '';
+      STATE.storyContext = '';
+      STATE.characterList = '';
+      saveState();
+      showToast("Story Lore & Characters cleared! (Custom prompt is safe)", "info");
+    }
+
+    // Clears everything in Tab 2
+    function clearAllContextAndPrompt() {
+      if (confirm("Kya aap saare story context aur custom prompt delete karna chahte hain?")) {
+        document.getElementById('animeTitle').value = '';
+        document.getElementById('storyContext').value = '';
+        document.getElementById('characterList').value = '';
+        document.getElementById('customPrompt').value = '';
+        STATE.animeTitle = '';
+        STATE.storyContext = '';
+        STATE.characterList = '';
+        STATE.customPrompt = '';
+        saveState();
+        showToast("All story contexts and prompts cleared!", "info");
+      }
+    }
+
+    /* ====================================================================
+       TAB SWITCHING
+    ==================================================================== */
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      const target = document.getElementById(`tab-${tabId}`);
+      if (target) target.classList.remove('hidden');
+
+      // Mobile buttons styling
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('text-purple-400');
+        btn.classList.add('text-gray-400');
+      });
+      const activeNav = document.getElementById(`nav-${tabId}`);
+      if (activeNav) {
+        activeNav.classList.remove('text-gray-400');
+        activeNav.classList.add('text-purple-400');
+      }
+
+      // Desktop tab styling
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.className = "tab-btn px-4 py-2 rounded-xl text-xs font-bold btn-3d-secondary text-gray-300";
+      });
+      const activeDesktop = document.getElementById(`d-nav-${tabId}`);
+      if (activeDesktop) {
+        activeDesktop.className = "tab-btn px-4 py-2 rounded-xl text-xs font-bold btn-3d-primary text-white";
+      }
+
+      if (tabId === 'preview') {
+        renderPreviewDropdown();
+        renderPreviewTable();
+      }
+    }
+
+    /* ====================================================================
+       PARSING SUBTITLES: SRT, ASS (WITH FULL EFFECT PRESERVATION), VTT
+    ==================================================================== */
+    function setupDragAndDrop() {
+      const dropzone = document.querySelector('label[for="subFileInput"]');
+      const input = document.getElementById('subFileInput');
+
+      input.addEventListener('change', (e) => handleFiles(e.target.files));
+
+      ['dragenter', 'dragover'].forEach(eventName => {
+        dropzone.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          dropzone.classList.add('border-purple-400', 'bg-purple-950/20');
+        }, false);
+      });
+
+      ['dragleave', 'drop'].forEach(eventName => {
+        dropzone.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          dropzone.classList.remove('border-purple-400', 'bg-purple-950/20');
+        }, false);
+      });
+
+      dropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        handleFiles(e.dataTransfer.files);
+      }, false);
+    }
+
+    async function handleFiles(fileList) {
+      if (!fileList || fileList.length === 0) return;
+
+      for (let i = 0; i < fileList.length; i++) {
+        const file = fileList[i];
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (!['srt', 'ass', 'ssa', 'vtt'].includes(ext)) {
+          showToast(`'${file.name}' format not supported! (.ass, .srt, .vtt only)`, 'error');
+          continue;
+        }
+
+        const rawText = await readFileAsText(file);
+        const parsed = parseSubtitle(file.name, ext, rawText);
+        STATE.files.push(parsed);
+      }
+
+      renderFileList();
+      document.getElementById('fileQueueSection').classList.remove('hidden');
+      showToast(`${fileList.length} file(s) added to queue!`, 'success');
+      document.getElementById('subFileInput').value = '';
+    }
+
+    function readFileAsText(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = (e) => reject(e);
+        reader.readAsText(file);
+      });
+    }
+
+    function parseSubtitle(filename, ext, content) {
+      const fileObj = {
+        id: 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+        name: filename,
+        ext: ext,
+        rawContent: content,
+        isAss: (ext === 'ass' || ext === 'ssa'),
+        assHeader: '',
+        lines: [],
+        status: 'pending', // 'pending' | 'translating' | 'done' | 'error'
+        progress: 0,
+        summaries: [] // store generated context memories
+      };
+
+      if (fileObj.isAss) {
+        parseAss(fileObj, content);
+      } else {
+        parseSrt(fileObj, content);
+      }
+
+      return fileObj;
+    }
+
+    /* Strict ASS format parser preserving all style headers and dialogue fields */
+    function parseAss(fileObj, text) {
+      const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+      let headerLines = [];
+      let isEventsSection = false;
+      let lineIndex = 1;
+
+      for (let i = 0; i < lines.length; i++) {
+        const l = lines[i];
+        if (l.trim().toLowerCase() === '[events]') {
+          isEventsSection = true;
+          headerLines.push(l);
+          continue;
+        }
+
+        if (!isEventsSection) {
+          headerLines.push(l);
+        } else {
+          if (l.startsWith('Format:')) {
+            headerLines.push(l);
+          } else if (l.startsWith('Dialogue:')) {
+            // Dialogue: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+            // Exactly 9 commas precede the Text field
+            const parts = l.split(',');
+            if (parts.length >= 10) {
+              const prefix = parts.slice(0, 9).join(',');
+              const dialogText = parts.slice(9).join(',');
+              
+              fileObj.lines.push({
+                id: lineIndex++,
+                time: `${parts[1]} ~ ${parts[2]}`,
+                assPrefix: prefix,
+                text: dialogText,
+                translatedText: ''
+              });
+            } else {
+              headerLines.push(l);
+            }
+          } else {
+            headerLines.push(l);
+          }
+        }
+      }
+
+      fileObj.assHeader = headerLines.join('\n');
+    }
+
+    /* SRT / VTT parser */
+    function parseSrt(fileObj, text) {
+      const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+      const blocks = normalized.trim().split(/\n\s*\n/);
+      let lineIndex = 1;
+
+      blocks.forEach(block => {
+        const lines = block.split('\n');
+        if (lines.length >= 2) {
+          let timeIndex = 0;
+          if (lines[0].includes('-->')) {
+            timeIndex = 0;
+          } else if (lines.length >= 2 && lines[1].includes('-->')) {
+            timeIndex = 1;
+          } else {
+            return;
+          }
+
+          const timeLine = lines[timeIndex];
+          const textContent = lines.slice(timeIndex + 1).join('\n');
+
+          fileObj.lines.push({
+            id: lineIndex++,
+            time: timeLine,
+            text: textContent,
+            translatedText: ''
+          });
+        }
+      });
+    }
+
+    function renderFileList() {
+      const container = document.getElementById('fileListContainer');
+      const badge = document.getElementById('fileCountBadge');
+      badge.textContent = `${STATE.files.length} Files`;
+
+      if (STATE.files.length === 0) {
+        document.getElementById('fileQueueSection').classList.add('hidden');
+        return;
+      }
+
+      container.innerHTML = STATE.files.map(f => {
+        let statusBadge = '';
+        if (f.status === 'pending') statusBadge = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-gray-800 text-gray-400 font-mono">Pending</span>`;
+        else if (f.status === 'translating') statusBadge = `<span class="text-[10px] px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-bold font-mono animate-pulse border border-purple-500/30">${f.progress}% translating</span>`;
+        else if (f.status === 'done') statusBadge = `<span class="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold font-mono border border-emerald-500/30">Done ✓</span>`;
+        else if (f.status === 'error') statusBadge = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 font-mono">Failed ✗</span>`;
+
+        return `
+          <div class="p-3 rounded-2xl bg-[#090b16] border border-purple-500/20 flex items-center justify-between text-xs shadow-md">
+            <div class="flex items-center gap-2.5 overflow-hidden mr-2">
+              <span class="px-2 py-0.5 text-[10px] rounded-lg bg-gradient-to-r from-purple-900/60 to-indigo-900/60 text-purple-200 font-mono font-bold uppercase border border-purple-500/30">${f.ext}</span>
+              <span class="text-white font-semibold truncate max-w-[180px] sm:max-w-xs" title="${f.name}">${f.name}</span>
+              <span class="text-[11px] text-gray-500 font-mono">(${f.lines.length} lines)</span>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+              ${statusBadge}
+              ${f.status === 'done' ? `
+                <button onclick="downloadSingleFile('${f.id}')" class="p-1.5 text-cyan-400 hover:text-cyan-300 transition-colors" title="Download">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                </button>
+              ` : `
+                <button onclick="removeFile('${f.id}')" class="p-1.5 text-gray-500 hover:text-red-400 transition-colors" title="Delete">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+              `}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function removeFile(fileId) {
+      if (STATE.isTranslating) {
+        showToast("Translation chalte waqt file remove nahi kar sakte!", "error");
+        return;
+      }
+      STATE.files = STATE.files.filter(f => f.id !== fileId);
+      renderFileList();
+    }
+
+    function clearFiles() {
+      if (STATE.isTranslating) {
+        showToast("Translation chal raha hai, rukiye!", "error");
+        return;
+      }
+      STATE.files = [];
+      renderFileList();
+    }
+
+    /* ====================================================================
+       TRANSLATION ENGINE: SEQUENTIAL QUEUE & 2-PART MEMORY CHUNKING
+    ==================================================================== */
+    async function startSequentialTranslation() {
+      autoSaveApi();
+      autoSaveContext();
+
+      if (!STATE.apiKey) {
+        showToast("Please provide your Google Gemini API Key in Settings!", "error");
+        switchTab('settings');
+        return;
+      }
+
+      if (STATE.files.length === 0) {
+        showToast("Queue me koi subtitle file nahi hai!", "error");
+        return;
+      }
+
+      STATE.isTranslating = true;
+      STATE.shouldStop = false;
+      document.getElementById('startBtn').classList.add('hidden');
+      document.getElementById('stopBtn').classList.remove('hidden');
+      document.getElementById('liveStatusBox').classList.remove('hidden');
+
+      // Sequential: Ek file complete hone ke baad agli file shuru hogi
+      for (let i = 0; i < STATE.files.length; i++) {
+        if (STATE.shouldStop) break;
+
+        const file = STATE.files[i];
+        if (file.status === 'done') continue;
+
+        file.status = 'translating';
+        renderFileList();
+
+        try {
+          await translateSingleFileWithParts(file);
+          file.status = 'done';
+          showToast(`'${file.name}' translation complete!`, 'success');
+        } catch (err) {
+          console.error("Translation error:", err);
+          file.status = 'error';
+          showToast(`'${file.name}' error: ${err.message}`, 'error');
+        }
+
+        renderFileList();
+      }
+
+      STATE.isTranslating = false;
+      document.getElementById('startBtn').classList.remove('hidden');
+      document.getElementById('stopBtn').classList.add('hidden');
+      document.getElementById('currentStatusText').textContent = STATE.shouldStop ? "Translation stopped by user." : "All subtitles translated successfully!";
+      
+      updateDownloadZipButtonState();
+      if (!STATE.shouldStop) {
+        showToast("All files translated! Check Preview tab to download.", "success");
+      }
+    }
+
+    function stopTranslation() {
+      STATE.shouldStop = true;
+      document.getElementById('currentStatusText').textContent = "Stopping...";
+      showToast("Stopping translation gracefully...", "info");
+    }
+
+    /* Translates a single subtitle file according to split parts setting */
+    async function translateSingleFileWithParts(file) {
+      const totalLines = file.lines.length;
+      if (totalLines === 0) return;
+
+      // Determine split chunks
+      let chunks = [];
+      const mode = STATE.splitParts; // '2', '3', '4', 'chunk'
+
+      if (mode === '2') {
+        // Exactly 2 equal halves: e.g. 500 lines -> 250 & 250
+        const mid = Math.ceil(totalLines / 2);
+        chunks.push(file.lines.slice(0, mid));
+        if (mid < totalLines) {
+          chunks.push(file.lines.slice(mid));
+        }
+      } else if (mode === '3') {
+        const pSize = Math.ceil(totalLines / 3);
+        chunks.push(file.lines.slice(0, pSize));
+        chunks.push(file.lines.slice(pSize, pSize * 2));
+        if (pSize * 2 < totalLines) chunks.push(file.lines.slice(pSize * 2));
+      } else if (mode === '4') {
+        const pSize = Math.ceil(totalLines / 4);
+        for (let i = 0; i < 4; i++) {
+          const slice = file.lines.slice(i * pSize, (i + 1) * pSize);
+          if (slice.length > 0) chunks.push(slice);
+        }
+      } else {
+        // Custom batch of ~50 lines
+        const bSize = 50;
+        for (let i = 0; i < totalLines; i += bSize) {
+          chunks.push(file.lines.slice(i, i + bSize));
+        }
+      }
+
+      const totalParts = chunks.length;
+      let cumulativeContextMemory = "";
+
+      for (let pIdx = 0; pIdx < totalParts; pIdx++) {
+        if (STATE.shouldStop) throw new Error("Stopped by user");
+
+        const partChunk = chunks[pIdx];
+        const partNumber = pIdx + 1;
+
+        // Status update
+        const progressPercent = Math.round((pIdx / totalParts) * 100);
+        file.progress = progressPercent;
+        renderFileList();
+
+        document.getElementById('currentStatusText').textContent = `${file.name}: Translating Part ${partNumber}/${totalParts} (${partChunk.length} lines)...`;
+        document.getElementById('overallPercentage').textContent = `${progressPercent}%`;
+        document.getElementById('overallProgressBar').style.width = `${progressPercent}%`;
+
+        // Translate this part
+        const translatedMap = await callGeminiForPart(partChunk, cumulativeContextMemory, partNumber, totalParts);
+
+        // Apply translations
+        partChunk.forEach(item => {
+          if (translatedMap[item.id]) {
+            item.translatedText = translatedMap[item.id];
+          } else {
+            item.translatedText = item.text;
+          }
+        });
+
+        // Generate Context Memory for the NEXT part if not last part
+        if (partNumber < totalParts) {
+          document.getElementById('currentStatusText').textContent = `${file.name}: Part ${partNumber} complete. Building story context summary...`;
+          try {
+            // Take recent translated lines of this part to build story summary
+            const sampleLines = partChunk.map(l => l.translatedText || l.text).slice(-30);
+            const partSummary = await generatePartStorySummary(file.name, partNumber, sampleLines);
+            cumulativeContextMemory = partSummary;
+            file.summaries.push(`Part ${partNumber} Summary: ${partSummary}`);
+
+            // Display in status box
+            const summaryCard = document.getElementById('midSummaryCard');
+            const summaryDisplay = document.getElementById('midSummaryText');
+            summaryDisplay.textContent = `[Part ${partNumber} Context]: ${partSummary}`;
+            summaryCard.classList.remove('hidden');
+          } catch (sumErr) {
+            console.warn("Could not generate summary:", sumErr);
+          }
+        }
+
+        // Delay to respect rate limit
+        if (pIdx < totalParts - 1) {
+          await sleep(STATE.rateLimitDelay);
+        }
+      }
+
+      file.progress = 100;
+      file.status = 'done';
+      renderFileList();
+    }
+
+    /* Core Gemini API Call for Part Translation */
+    async function callGeminiForPart(linesChunk, previousPartSummary, partNum, totalParts) {
+      let targetLangDesc = "Natural, conversational Hinglish (Roman Hindi anime dub style, e.g. 'aisa kuch samjhe?', 'chal jhootha', 'tum pagal ho gaye kya?', 'are bhai sun to', 'ye sach me gazab hai!'). Do NOT use Devanagari script. Keep it lively, informal, and anime-toned.";
+      if (STATE.targetLang === 'bengali') {
+        targetLangDesc = "Standard, expressive, and natural Bengali (বাংলা লিপি). Dialogue must feel lively and true to anime character emotions.";
+      }
+
+      const systemInstruction = `You are a professional anime subtitle translator specializing in ${STATE.targetLang.toUpperCase()}.
+Target Language: ${targetLangDesc}
+
+MANDATORY RULES FOR ASS EFFECTS & TAGS:
+1. PRESERVE ALL ASS TAGS AND STYLES EXACTLY AS THEY ARE.
+   - For example: {\\an8}, {\\pos(x,y)}, {\\fad(x,y)}, {\\b1}...{\\b0}, {\\c&H...&}, and line breaks \\N MUST BE KEPT 100% UNTOUCHED.
+   - Example Original: "{\\an8}Look out!\\NIt's coming!"
+   - Example Translated: "{\\an8}Dhyan se!\\NYe aa raha hai!"
+   - NEVER strip, modify, delete, or translate any text inside curly braces {...} or \\N!
+
+2. HINGLISH TONE:
+   - Use casual, natural Roman Hindi anime dub speech: 'aisa kuch samjhe', 'kya baat kar rahe ho', 'mujhe maaf karna', 'chinta mat karo'.
+   - NEVER return Hindi script (Devanagari). Use Roman letters only.
+   - Keep Japanese honorifics (Senpai, Kun, Chan, Sama, Sensei, Bro/Bhai) intact.
+
+3. STRICT JSON OUTPUT FORMAT:
+   You MUST return ONLY a strictly valid JSON object where keys are the line IDs as strings and values are the translated text.
+   Example:
+   {
+     "1": "{\\\\an8}Dhyan se dekho!",
+     "2": "Ye kya ho raha hai?"
+   }
+   Do not add any explanation or preamble. Return ONLY the JSON object.`;
+
+      let userPrompt = `ANIME DETAILS & LORE:
+- Anime: ${STATE.animeTitle || 'Anime Episode'}
+- Scene Context: ${STATE.storyContext || 'Ongoing action/dialogue scene'}
+- Cast & Pronouns:
+${STATE.characterList || 'Preserve character tones and genders accurately.'}
+
+${STATE.customPrompt ? `CUSTOM PROMPT & TONE RULES:\n${STATE.customPrompt}\n` : ''}
+${previousPartSummary ? `PREVIOUS PART STORY CONTEXT (DO NOT FORGET THIS CONTEXT):\n"${previousPartSummary}"\nContinue translation maintaining this exact storyline, emotional mood, and character relationships seamlessly.\n` : ''}
+
+TRANSLATE PART ${partNum}/${totalParts} (${linesChunk.length} lines). Return ONLY JSON:
+` + JSON.stringify(linesChunk.map(l => ({ id: l.id, text: l.text })), null, 2);
+
+      const responseText = await executeGeminiRequest(systemInstruction, userPrompt);
+      return parseAiJsonResponse(responseText, linesChunk);
+    }
+
+    /* Generates concise story context summary of what was just translated */
+    async function generatePartStorySummary(filename, partNum, recentLines) {
+      const prompt = `Here are sample translated lines from Part ${partNum} of ${filename}:
+${recentLines.join('\n')}
+
+Task: In 2-3 concise sentences in English/Hinglish, summarize what just happened in this part (the plot situation, who spoke to whom, character attitudes and key reveals). This summary will be passed as context to the next part so the model does not forget the storyline.`;
+
+      return await executeGeminiRequest("You are an anime continuity editor.", prompt);
+    }
+
+    /* Low-level Google Gemini REST call */
+    async function executeGeminiRequest(systemText, userText) {
+      const model = STATE.model || 'gemini-2.5-flash';
+      const apiKey = STATE.apiKey;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+      const payload = {
+        contents: [
+          {
+            role: "user",
+            parts: [{ text: `${systemText}\n\n${userText}` }]
+          }
+        ],
+        generationConfig: {
+          temperature: 0.3,
+          maxOutputTokens: 8192
+        }
+      };
+
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        const msg = errorData.error?.message || `Gemini API Status: ${res.status}`;
+        throw new Error(msg);
+      }
+
+      const data = await res.json();
+      return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    }
+
+    function parseAiJsonResponse(text, originalChunk) {
+      try {
+        let clean = text.trim();
+        if (clean.includes('```')) {
+          clean = clean.replace(/```(?:json)?([\s\S]*?)```/g, '$1').trim();
+        }
+        const firstBrace = clean.indexOf('{');
+        const lastBrace = clean.lastIndexOf('}');
+        if (firstBrace !== -1 && lastBrace !== -1) {
+          clean = clean.substring(firstBrace, lastBrace + 1);
+        }
+        return JSON.parse(clean);
+      } catch (e) {
+        console.warn("JSON Parse fallback applied:", e);
+        const map = {};
+        originalChunk.forEach(item => {
+          map[item.id] = item.text;
+        });
+        return map;
+      }
+    }
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    /* ====================================================================
+       RECONSTRUCTION & EXPORT
+    ==================================================================== */
+    function reconstructSubtitle(file) {
+      if (file.isAss) {
+        const lines = file.lines.map(l => {
+          // If translation contains raw newlines, convert them to ASS \N
+          const trans = (l.translatedText || l.text).replace(/\r?\n/g, '\\N');
+          return `${l.assPrefix},${trans}`;
+        });
+        return `${file.assHeader}\n${lines.join('\n')}\n`;
+      } else {
+        return file.lines.map(l => {
+          return `${l.id}\n${l.time}\n${l.translatedText || l.text}\n`;
+        }).join('\n');
+      }
+    }
+
+    function downloadSingleFile(fileId) {
+      const file = STATE.files.find(f => f.id === fileId);
+      if (!file) return;
+
+      const content = reconstructSubtitle(file);
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      
+      const langSuffix = STATE.targetLang === 'hinglish' ? '.hinglish' : '.bn';
+      const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+      a.download = `${baseName}${langSuffix}.${file.ext}`;
+      a.href = url;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      showToast(`'${a.download}' download started!`, 'success');
+    }
+
+    function downloadCurrentFile() {
+      if (STATE.activePreviewFileId) {
+        downloadSingleFile(STATE.activePreviewFileId);
+      }
+    }
+
+    async function downloadAllAsZip() {
+      const doneFiles = STATE.files.filter(f => f.status === 'done');
+      if (doneFiles.length === 0) {
+        showToast("No translated files ready to download!", "error");
+        return;
+      }
+
+      const zip = new JSZip();
+      const langSuffix = STATE.targetLang === 'hinglish' ? '.hinglish' : '.bn';
+
+      doneFiles.forEach(file => {
+        const content = reconstructSubtitle(file);
+        const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+        zip.file(`${baseName}${langSuffix}.${file.ext}`, content);
+      });
+
+      showToast("Creating ZIP file...", "info");
+      const blob = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.download = `Anime_Subtitles_Hinglish_${Date.now()}.zip`;
+      a.href = url;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      showToast("ZIP package downloaded!", "success");
+    }
+
+    function updateDownloadZipButtonState() {
+      const doneFiles = STATE.files.filter(f => f.status === 'done');
+      const zipBtn = document.getElementById('downloadZipBtn');
+      if (doneFiles.length > 0) {
+        zipBtn.disabled = false;
+        zipBtn.className = "btn-3d-primary px-3.5 py-2 rounded-xl text-xs font-bold text-white flex items-center gap-1.5";
+      } else {
+        zipBtn.disabled = true;
+        zipBtn.className = "btn-3d-secondary px-3.5 py-2 rounded-xl text-xs font-bold text-gray-400 border-gray-700 cursor-not-allowed flex items-center gap-1.5";
+      }
+    }
+
+    /* ====================================================================
+       PREVIEW TABLE
+    ==================================================================== */
+    function renderPreviewDropdown() {
+      const select = document.getElementById('previewFileSelect');
+      select.innerHTML = '';
+
+      if (STATE.files.length === 0) {
+        select.innerHTML = '<option value="">No files added yet</option>';
+        STATE.activePreviewFileId = null;
+        document.getElementById('downloadCurrentBtn').disabled = true;
+        return;
+      }
+
+      STATE.files.forEach(f => {
+        const opt = document.createElement('option');
+        opt.value = f.id;
+        opt.textContent = `${f.name} (${f.status === 'done' ? 'Done' : f.status})`;
+        if (f.id === STATE.activePreviewFileId || !STATE.activePreviewFileId) {
+          opt.selected = true;
+          STATE.activePreviewFileId = f.id;
+        }
+        select.appendChild(opt);
+      });
+
+      document.getElementById('downloadCurrentBtn').disabled = false;
+    }
+
+    function renderPreviewTable() {
+      const select = document.getElementById('previewFileSelect');
+      const fileId = select.value || STATE.activePreviewFileId;
+      STATE.activePreviewFileId = fileId;
+      const tbody = document.getElementById('previewTableBody');
+
+      const file = STATE.files.find(f => f.id === fileId);
+      if (!file || file.lines.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="4" class="text-center py-10 text-gray-500 italic">
+              No translation data to display. Please upload and translate a file first.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      const sample = file.lines.slice(0, 200);
+      tbody.innerHTML = sample.map(l => {
+        return `
+          <tr class="hover:bg-purple-900/10 transition-colors">
+            <td class="py-2.5 px-3 text-center text-gray-500 font-mono text-[11px]">${l.id}</td>
+            <td class="py-2.5 px-3 font-mono text-[10px] text-gray-400 whitespace-nowrap">${escapeHtml(l.time)}</td>
+            <td class="py-2.5 px-3 text-gray-300 break-words">${escapeHtml(l.text)}</td>
+            <td class="py-2.5 px-3 text-cyan-200 font-semibold break-words">${escapeHtml(l.translatedText || '— (Pending)')}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+    }
+
+    /* ====================================================================
+       TOAST UTILITY
+    ==================================================================== */
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+
+      if (type === 'success') {
+        toast.className = "fixed top-5 right-5 z-50 transform translate-y-0 opacity-100 transition-all duration-300 px-4 py-2.5 rounded-2xl shadow-2xl text-xs font-bold flex items-center gap-2 border bg-emerald-950/90 border-emerald-500/50 text-emerald-200 shadow-emerald-500/20";
+      } else if (type === 'error') {
+        toast.className = "fixed top-5 right-5 z-50 transform translate-y-0 opacity-100 transition-all duration-300 px-4 py-2.5 rounded-2xl shadow-2xl text-xs font-bold flex items-center gap-2 border bg-red-950/90 border-red-500/50 text-red-200 shadow-red-500/20";
+      } else {
+        toast.className = "fixed top-5 right-5 z-50 transform translate-y-0 opacity-100 transition-all duration-300 px-4 py-2.5 rounded-2xl shadow-2xl text-xs font-bold flex items-center gap-2 border bg-[#16142a]/95 border-purple-500/50 text-purple-200 shadow-purple-500/20";
+      }
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-[-100px]');
+      }, 3500);
+    }
+  </script>
+</body>
+</html>
