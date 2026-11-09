@@ -683,8 +683,9 @@
         } catch (_) {}
 
         const presetSelect = document.getElementById('geminiModelSelect');
-        if ([...presetSelect.options].some(o => o.value === STATE.model)) {
-          presetSelect.value = STATE.model;
+        if (presetSelect && presetSelect.options) {
+          const hasOption = Array.from(presetSelect.options).some(o => o.value === STATE.model);
+          if (hasOption) presetSelect.value = STATE.model;
         }
 
         updateModelBadge(STATE.model);
@@ -1338,7 +1339,6 @@
       document.getElementById('currentStatusText').textContent = "Stopping...";
       logLive("Stopping translation requested...", "warn");
       showToast("Stopping translation gracefully...", "info");
-    }
     }
 
     /* Translates a single subtitle file according to split parts setting */
