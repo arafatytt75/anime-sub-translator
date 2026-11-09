@@ -321,6 +321,19 @@
             </div>
             <p id="midSummaryText" class="text-gray-300 italic font-mono leading-relaxed"></p>
           </div>
+
+          <!-- Live Activity & Error Log Terminal -->
+          <div class="mt-2.5 pt-2 border-t border-purple-500/20">
+            <button type="button" onclick="toggleLiveLog()" class="text-[10px] text-gray-400 hover:text-purple-300 font-mono flex items-center justify-between w-full py-1">
+              <span class="flex items-center gap-1.5 font-bold text-purple-300">
+                <span id="logToggleArrow">▼</span> <span>Live Activity & Error Log</span>
+              </span>
+              <span id="lastLogTime" class="text-[9px] text-gray-500">Live</span>
+            </button>
+            <div id="liveLogContainer" class="mt-1.5 p-2.5 rounded-xl bg-black/90 border border-purple-500/30 font-mono text-[10px] text-gray-300 max-h-40 overflow-y-auto space-y-1">
+              <div class="text-gray-500 italic">Ready. Logs will appear here in real-time...</div>
+            </div>
+          </div>
         </div>
 
       </div>
@@ -459,9 +472,17 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
               <select id="geminiModelSelect" onchange="onGeminiPresetChange()" class="input-3d w-full px-3 py-2.5 rounded-xl text-xs text-white focus:outline-none font-mono">
-                <!-- Group 1: Gemini 3.x & 4.x Next-Gen Generation -->
-                <optgroup label="🚀 Gemini 3.x & 4.x Series (Newest Generation)">
-                  <option value="gemini-3.8-flash" selected>gemini-3.8-flash (High Intelligence & Speed - Recommended)</option>
+                <!-- Group 1: Gemini 2.x Series (Verified Production Standard) -->
+                <optgroup label="⚡ Production Flash (Verified Active & Recommended)">
+                  <option value="gemini-2.5-flash" selected>gemini-2.5-flash (Super Fast, Smart & Stable - Default)</option>
+                  <option value="gemini-2.0-flash">gemini-2.0-flash (Production Workhorse, 15 RPM)</option>
+                  <option value="gemini-2.0-flash-lite">gemini-2.0-flash-lite (Ultra Low Latency, 30 RPM)</option>
+                  <option value="gemini-2.5-pro">gemini-2.5-pro (State-of-the-Art Deep Reasoning)</option>
+                </optgroup>
+
+                <!-- Group 2: Gemini 3.x & 4.x Series -->
+                <optgroup label="🚀 Gemini 3.x & 4.x Series (Preview & AI Studio Docs)">
+                  <option value="gemini-3.8-flash">gemini-3.8-flash (High Intelligence & Speed)</option>
                   <option value="gemini-3.6-flash">gemini-3.6-flash (Advanced Efficiency Flash)</option>
                   <option value="gemini-3.5-flash-lite">gemini-3.5-flash-lite (Cost-Effective & Super Fast)</option>
                   <option value="gemini-3.1-flash-lite">gemini-3.1-flash-lite (Compact High-Throughput)</option>
@@ -469,14 +490,6 @@
                   <option value="gemini-3.8-pro">gemini-3.8-pro (Next-Gen Pro Reasoning)</option>
                   <option value="gemini-3.5-pro">gemini-3.5-pro (Deep Lore & Complex Dialects)</option>
                   <option value="gemini-3.0-flash">gemini-3.0-flash (General Purpose Flash)</option>
-                </optgroup>
-
-                <!-- Group 2: Gemini 2.x Series -->
-                <optgroup label="⚡ Gemini 2.x Series (Fast & Reliable)">
-                  <option value="gemini-2.5-flash">gemini-2.5-flash (Hybrid Reasoning & Fast)</option>
-                  <option value="gemini-2.5-pro">gemini-2.5-pro (State-of-the-Art Deep Reasoning)</option>
-                  <option value="gemini-2.0-flash">gemini-2.0-flash (Production Workhorse, 15 RPM)</option>
-                  <option value="gemini-2.0-flash-lite">gemini-2.0-flash-lite (Ultra Low Latency, 30 RPM)</option>
                 </optgroup>
 
                 <!-- Group 3: Gemini 1.5 Series -->
@@ -606,7 +619,7 @@
     ==================================================================== */
     const STATE = {
       apiKey: '',
-      model: 'gemini-3.8-flash',
+      model: 'gemini-2.5-flash',
       targetLang: 'hinglish', // 'hinglish' | 'bengali'
       splitParts: '2', // '2' | '3' | '4' | 'chunk'
       rateLimitDelay: 1500,
@@ -637,7 +650,7 @@
       try {
         const saved = JSON.parse(localStorage.getItem('anime_sub_3d_state') || '{}');
         if (saved.apiKey) STATE.apiKey = saved.apiKey;
-        if (saved.model) STATE.model = saved.model;
+        if (saved.model) STATE.model = (saved.model === 'gemini-3.8-flash' ? 'gemini-2.5-flash' : saved.model);
         if (saved.targetLang) STATE.targetLang = saved.targetLang;
         if (saved.splitParts) STATE.splitParts = saved.splitParts;
         if (saved.rateLimitDelay) STATE.rateLimitDelay = saved.rateLimitDelay;
@@ -1024,6 +1037,7 @@
     }
 
     function parseSubtitle(filename, ext, content) {
+      content = content.replace(/^\uFEFF/, ''); // Strip UTF-8 BOM if present
       const fileObj = {
         id: 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
         name: filename,
@@ -1034,7 +1048,8 @@
         lines: [],
         status: 'pending', // 'pending' | 'translating' | 'done' | 'error'
         progress: 0,
-        summaries: [] // store generated context memories
+        errorMsg: '',
+        summaries: []
       };
 
       if (fileObj.isAss) {
@@ -1064,9 +1079,9 @@
         if (!isEventsSection) {
           headerLines.push(l);
         } else {
-          if (l.startsWith('Format:')) {
+          if (l.trim().startsWith('Format:')) {
             headerLines.push(l);
-          } else if (l.startsWith('Dialogue:')) {
+          } else if (/^Dialogue:\s*/i.test(l)) {
             // Dialogue: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             // Exactly 9 commas precede the Text field
             const parts = l.split(',');
@@ -1124,6 +1139,41 @@
       });
     }
 
+    /* ====================================================================
+       LIVE LOGGING UTILITY
+    ==================================================================== */
+    function logLive(msg, type = 'info') {
+      const container = document.getElementById('liveLogContainer');
+      const timeEl = document.getElementById('lastLogTime');
+      if (!container) return;
+
+      const time = new Date().toLocaleTimeString('en-US', { hour12: false });
+      if (timeEl) timeEl.textContent = time;
+
+      let colorClass = 'text-gray-300';
+      if (type === 'warn') colorClass = 'text-amber-300';
+      else if (type === 'error') colorClass = 'text-red-400 font-bold';
+      else if (type === 'success') colorClass = 'text-emerald-300 font-bold';
+
+      const entry = document.createElement('div');
+      entry.className = `leading-tight ${colorClass}`;
+      entry.innerHTML = `<span class="text-gray-500">[${time}]</span> ${escapeHtml(msg)}`;
+      container.appendChild(entry);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function toggleLiveLog() {
+      const container = document.getElementById('liveLogContainer');
+      const arrow = document.getElementById('logToggleArrow');
+      if (container.classList.contains('hidden')) {
+        container.classList.remove('hidden');
+        arrow.textContent = '▼';
+      } else {
+        container.classList.add('hidden');
+        arrow.textContent = '▶';
+      }
+    }
+
     function renderFileList() {
       const container = document.getElementById('fileListContainer');
       const badge = document.getElementById('fileCountBadge');
@@ -1139,30 +1189,48 @@
         if (f.status === 'pending') statusBadge = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-gray-800 text-gray-400 font-mono">Pending</span>`;
         else if (f.status === 'translating') statusBadge = `<span class="text-[10px] px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-bold font-mono animate-pulse border border-purple-500/30">${f.progress}% translating</span>`;
         else if (f.status === 'done') statusBadge = `<span class="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold font-mono border border-emerald-500/30">Done ✓</span>`;
-        else if (f.status === 'error') statusBadge = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 font-mono">Failed ✗</span>`;
+        else if (f.status === 'error') statusBadge = `
+          <div class="flex items-center gap-1.5">
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 font-mono border border-red-500/30 font-bold">Failed ✗</span>
+            <button onclick="retrySingleFile('${f.id}')" class="px-2 py-0.5 text-[10px] rounded-lg bg-purple-600/30 hover:bg-purple-600/60 text-purple-200 border border-purple-500/40 font-bold transition-all">Retry</button>
+          </div>
+        `;
 
         return `
-          <div class="p-3 rounded-2xl bg-[#090b16] border border-purple-500/20 flex items-center justify-between text-xs shadow-md">
-            <div class="flex items-center gap-2.5 overflow-hidden mr-2">
-              <span class="px-2 py-0.5 text-[10px] rounded-lg bg-gradient-to-r from-purple-900/60 to-indigo-900/60 text-purple-200 font-mono font-bold uppercase border border-purple-500/30">${f.ext}</span>
-              <span class="text-white font-semibold truncate max-w-[180px] sm:max-w-xs" title="${f.name}">${f.name}</span>
-              <span class="text-[11px] text-gray-500 font-mono">(${f.lines.length} lines)</span>
+          <div class="p-3 rounded-2xl bg-[#090b16] border ${f.status === 'error' ? 'border-red-500/30' : 'border-purple-500/20'} flex flex-col gap-1.5 text-xs shadow-md">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2.5 overflow-hidden mr-2">
+                <span class="px-2 py-0.5 text-[10px] rounded-lg bg-gradient-to-r from-purple-900/60 to-indigo-900/60 text-purple-200 font-mono font-bold uppercase border border-purple-500/30">${f.ext}</span>
+                <span class="text-white font-semibold truncate max-w-[180px] sm:max-w-xs" title="${f.name}">${f.name}</span>
+                <span class="text-[11px] text-gray-500 font-mono">(${f.lines.length} lines)</span>
+              </div>
+              <div class="flex items-center gap-2 flex-shrink-0">
+                ${statusBadge}
+                ${f.status === 'done' ? `
+                  <button onclick="downloadSingleFile('${f.id}')" class="p-1.5 text-cyan-400 hover:text-cyan-300 transition-colors" title="Download">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                  </button>
+                ` : `
+                  <button onclick="removeFile('${f.id}')" class="p-1.5 text-gray-500 hover:text-red-400 transition-colors" title="Delete">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                  </button>
+                `}
+              </div>
             </div>
-            <div class="flex items-center gap-2 flex-shrink-0">
-              ${statusBadge}
-              ${f.status === 'done' ? `
-                <button onclick="downloadSingleFile('${f.id}')" class="p-1.5 text-cyan-400 hover:text-cyan-300 transition-colors" title="Download">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                </button>
-              ` : `
-                <button onclick="removeFile('${f.id}')" class="p-1.5 text-gray-500 hover:text-red-400 transition-colors" title="Delete">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-              `}
-            </div>
+            ${f.errorMsg ? `<div class="text-[10px] text-red-400 font-mono pl-1 border-l-2 border-red-500/40 break-words">⚠️ ${escapeHtml(f.errorMsg)}</div>` : ''}
           </div>
         `;
       }).join('');
+    }
+
+    async function retrySingleFile(fileId) {
+      const file = STATE.files.find(f => f.id === fileId);
+      if (!file || STATE.isTranslating) return;
+      file.status = 'pending';
+      file.errorMsg = '';
+      file.progress = 0;
+      renderFileList();
+      startSequentialTranslation();
     }
 
     function removeFile(fileId) {
@@ -1207,24 +1275,39 @@
       document.getElementById('stopBtn').classList.remove('hidden');
       document.getElementById('liveStatusBox').classList.remove('hidden');
 
+      let completedFiles = 0;
+      let failedFiles = 0;
+
+      logLive(`🚀 Starting batch translation (${STATE.files.length} file(s)). Model: ${STATE.model}`);
+
       // Sequential: Ek file complete hone ke baad agli file shuru hogi
       for (let i = 0; i < STATE.files.length; i++) {
         if (STATE.shouldStop) break;
 
         const file = STATE.files[i];
-        if (file.status === 'done') continue;
+        if (file.status === 'done') {
+          completedFiles++;
+          continue;
+        }
 
         file.status = 'translating';
+        file.errorMsg = '';
         renderFileList();
 
         try {
+          logLive(`Translating file: ${file.name} (${file.lines.length} lines)...`);
           await translateSingleFileWithParts(file);
           file.status = 'done';
+          completedFiles++;
+          logLive(`✅ Completed file: ${file.name}`, "success");
           showToast(`'${file.name}' translation complete!`, 'success');
         } catch (err) {
           console.error("Translation error:", err);
           file.status = 'error';
-          showToast(`'${file.name}' error: ${err.message}`, 'error');
+          file.errorMsg = err.message || "Translation error occurred";
+          failedFiles++;
+          logLive(`❌ Error translating '${file.name}': ${file.errorMsg}`, "error");
+          showToast(`'${file.name}' error: ${file.errorMsg}`, 'error');
         }
 
         renderFileList();
@@ -1233,18 +1316,29 @@
       STATE.isTranslating = false;
       document.getElementById('startBtn').classList.remove('hidden');
       document.getElementById('stopBtn').classList.add('hidden');
-      document.getElementById('currentStatusText').textContent = STATE.shouldStop ? "Translation stopped by user." : "All subtitles translated successfully!";
       
-      updateDownloadZipButtonState();
-      if (!STATE.shouldStop) {
+      if (STATE.shouldStop) {
+        document.getElementById('currentStatusText').textContent = "Translation stopped by user.";
+        logLive("⏹️ Translation stopped by user.");
+      } else if (failedFiles > 0 && completedFiles === 0) {
+        document.getElementById('currentStatusText').textContent = `Translation failed (${failedFiles} file). Check red error log above.`;
+        showToast("Translation failed. Check error details.", "error");
+      } else if (failedFiles > 0) {
+        document.getElementById('currentStatusText').textContent = `Finished with errors (${completedFiles} completed, ${failedFiles} failed).`;
+      } else {
+        document.getElementById('currentStatusText').textContent = "All subtitles translated successfully!";
         showToast("All files translated! Check Preview tab to download.", "success");
       }
+      
+      updateDownloadZipButtonState();
     }
 
     function stopTranslation() {
       STATE.shouldStop = true;
       document.getElementById('currentStatusText').textContent = "Stopping...";
+      logLive("Stopping translation requested...", "warn");
       showToast("Stopping translation gracefully...", "info");
+    }
     }
 
     /* Translates a single subtitle file according to split parts setting */
@@ -1400,11 +1494,10 @@ Task: In 2-3 concise sentences in English/Hinglish, summarize what just happened
       return await executeGeminiRequest("You are an anime continuity editor.", prompt);
     }
 
-    /* Low-level Google Gemini REST call */
-    async function executeGeminiRequest(systemText, userText) {
-      const model = STATE.model || 'gemini-2.5-flash';
+    /* Low-level Google Gemini REST call with Timeout, 404 Auto-Fallback, and 429 Retry */
+    async function executeGeminiRequest(systemText, userText, retryCount = 0) {
+      let model = STATE.model || 'gemini-2.5-flash';
       const apiKey = STATE.apiKey;
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
       const payload = {
         contents: [
@@ -1419,36 +1512,101 @@ Task: In 2-3 concise sentences in English/Hinglish, summarize what just happened
         }
       };
 
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        const msg = errorData.error?.message || `Gemini API Status: ${res.status}`;
-        throw new Error(msg);
+      // Abort controller with 55s timeout so it NEVER freezes
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 55000);
+
+      try {
+        logLive(`Requesting Gemini [${model}]...`);
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        // Auto-Fallback: If model gives 404 (Model Not Found) or not available on this API key
+        if (res.status === 404 && model !== 'gemini-2.5-flash') {
+          logLive(`⚠️ Model '${model}' not found in API. Auto-switching to 'gemini-2.5-flash'...`, "warn");
+          showToast(`'${model}' not found in API. Auto-fallback to gemini-2.5-flash!`, "info");
+          STATE.model = 'gemini-2.5-flash';
+          const select = document.getElementById('geminiModelSelect');
+          if (select) select.value = 'gemini-2.5-flash';
+          saveState();
+          return await executeGeminiRequest(systemText, userText, retryCount);
+        }
+
+        // Auto-Retry on Rate Limit (429 Quota Exceeded)
+        if (res.status === 429) {
+          if (retryCount < 3) {
+            const waitSec = (retryCount + 1) * 6; // 6s, 12s, 18s
+            logLive(`⏳ Rate limit hit (429). Waiting ${waitSec}s before auto-retry (${retryCount + 1}/3)...`, "warn");
+            document.getElementById('currentStatusText').textContent = `Rate limit wait: retrying in ${waitSec}s...`;
+            await sleep(waitSec * 1000);
+            return await executeGeminiRequest(systemText, userText, retryCount + 1);
+          } else {
+            throw new Error("Quota Exceeded (429): Google Gemini free tier rate limit reached. Please wait 1 minute.");
+          }
+        }
+
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          const msg = errorData.error?.message || `Gemini API Status: ${res.status}`;
+          throw new Error(msg);
+        }
+
+        const data = await res.json();
+        const candidate = data.candidates?.[0];
+        if (!candidate) {
+          if (data.promptFeedback?.blockReason) {
+            throw new Error(`Content blocked: ${data.promptFeedback.blockReason}`);
+          }
+          return "";
+        }
+        if (candidate.finishReason === 'SAFETY') {
+          throw new Error("Translation blocked by Gemini Safety filter.");
+        }
+
+        const resultText = candidate.content?.parts?.[0]?.text || "";
+        logLive(`Response received from Gemini [${model}].`, "success");
+        return resultText;
+
+      } catch (err) {
+        clearTimeout(timeoutId);
+        if (err.name === 'AbortError') {
+          if (retryCount < 2) {
+            logLive(`⚠️ Request timed out after 55s. Auto-retrying (${retryCount + 1}/2)...`, "warn");
+            return await executeGeminiRequest(systemText, userText, retryCount + 1);
+          }
+          throw new Error("Network request timed out (55s). Please check your internet connection.");
+        }
+        throw err;
       }
-
-      const data = await res.json();
-      return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
     }
 
     function parseAiJsonResponse(text, originalChunk) {
+      if (!text || typeof text !== 'string') {
+        const fallback = {};
+        originalChunk.forEach(item => fallback[item.id] = item.text);
+        return fallback;
+      }
       try {
         let clean = text.trim();
-        if (clean.includes('```')) {
-          clean = clean.replace(/```(?:json)?([\s\S]*?)```/g, '$1').trim();
-        }
+        // Remove markdown ``` blocks
+        clean = clean.replace(/```(?:json)?/gi, '').replace(/```/g, '').trim();
         const firstBrace = clean.indexOf('{');
         const lastBrace = clean.lastIndexOf('}');
         if (firstBrace !== -1 && lastBrace !== -1) {
           clean = clean.substring(firstBrace, lastBrace + 1);
         }
+        // Remove trailing commas before } or ]
+        clean = clean.replace(/,\s*([}\]])/g, '$1');
         return JSON.parse(clean);
       } catch (e) {
-        console.warn("JSON Parse fallback applied:", e);
+        logLive(`⚠️ JSON parsing fallback: preserving original lines for this chunk.`, "warn");
         const map = {};
         originalChunk.forEach(item => {
           map[item.id] = item.text;
